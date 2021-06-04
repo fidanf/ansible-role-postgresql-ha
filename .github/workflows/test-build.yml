@@ -1,3 +1,4 @@
+---
 name: test-build
 
 on:
@@ -14,11 +15,11 @@ env:
   VAGRANT_DEFAULT_PROVIDER: libvirt
   PY_COLORS: 1
   ANSIBLE_FORCE_COLOR: 1
+  ROLE_PATH: $PWD
 
 defaults:
   run:
     shell: bash
-    working-directory: fidanf.postgresql_ha
 
 jobs:
   build:
@@ -32,21 +33,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install Vagrant 
-        shell: bash
         run: |
-          echo $PATH
-          curl -Os https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_x86_64.deb
-          curl -Os https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_SHA256SUMS
-          curl -Os https://releases.hashicorp.com/vagrant/2.2.14/vagrant_2.2.14_SHA256SUMS.sig
-          gpg --receive-key 51852D87348FFC4C
-          gpg --verify vagrant_2.2.14_SHA256SUMS.sig vagrant_2.2.14_SHA256SUMS
-          sha256sum -c vagrant_2.2.14_SHA256SUMS 2>&1 | grep OK
-          sudo apt-get update && sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev
-          sudo dpkg -i vagrant_2.2.14_x86_64.deb
+          sudo apt-get update
+          sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev
+          wget -O /tmp/vagrant_2.2.16_x86_64.deb https://releases.hashicorp.com/vagrant/2.2.16/vagrant_2.2.16_x86_64.deb
+          sudo dpkg -i /tmp/vagrant_2.2.16_x86_64.deb
           sudo vagrant plugin install vagrant-libvirt
-          rm -rf vagrant_2.2.14_*
+      - name: Check CPU support 
+        run: |
+          egrep '(vmx|svm)' /proc/cpuinfo 
+          lsmod | egrep 'kvm'
       - name: Install python dependencies 
-        shell: bash
         run: |
           sudo apt-get -y purge python3-openssl && sudo apt-get -y autoremove
           sudo apt-get update && sudo apt-get install -y ca-certificates curl gcc iproute2 pwgen python3 python3-dev sudo
