@@ -1,0 +1,61 @@
+---
+name: test-build
+
+on:
+  repository_dispatch: 
+    types: test-build
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - master
+
+env:
+  VAGRANT_DEFAULT_PROVIDER: libvirt
+  PY_COLORS: 1
+  ANSIBLE_FORCE_COLOR: 1
+  ROLE_PATH: $PWD
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        distro:
+          - generic/ubuntu1804
+          - generic/debian10
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install Vagrant 
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev
+          wget -O /tmp/vagrant_2.2.16_x86_64.deb https://releases.hashicorp.com/vagrant/2.2.16/vagrant_2.2.16_x86_64.deb
+          sudo dpkg -i /tmp/vagrant_2.2.16_x86_64.deb
+          sudo vagrant plugin install vagrant-libvirt
+      - name: Check CPU support 
+        run: |
+          egrep '(vmx|svm)' /proc/cpuinfo 
+          lsmod | egrep 'kvm'
+      - name: Install python dependencies 
+        run: |
+          sudo apt-get -y purge python3-openssl && sudo apt-get -y autoremove
+          sudo apt-get update && sudo apt-get install -y ca-certificates curl gcc iproute2 pwgen python3 python3-dev sudo
+          curl -skL https://bootstrap.pypa.io/get-pip.py | sudo -H python3
+          sudo -H pip3 install --upgrade --ignore-installed --requirement requirements.txt
+      - name: Run Molecule tests.
+        run: |
+          sudo -E molecule syntax \
+          && sudo -E molecule lint \
+          && sudo -E molecule create \
+          && sudo -E molecule converge \
+          && sudo -E molecule verify \
+          && sudo -E molecule destroy
+        env:
+          MOLECULE_DISTRO: ${{ matrix.distro }}
