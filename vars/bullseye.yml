@@ -1,0 +1,3 @@
+---
+# PostgreSQL vars for Debian Bullseye (11.x)
+postgresql_systemctl_path: /usr/bin

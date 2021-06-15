@@ -1,0 +1,3 @@
+---
+# PostgreSQL vars for v13
+postgresql_stats_temp_directory: /var/run/postgresql/{{ postgresql_version }}-{{ postgresql_cluster_name }}.pg_stat_tmp/

@@ -2,13 +2,13 @@
 - name: PostgreSQL | Extensions | Add 2nd Quadrant repo gpg key | apt
   apt_key:
     url: "{{ repmgr_gpg_key_url }}"
-  when: ansible_pkg_mgr == "apt"
+  when: ansible_pkg_mgr == "apt" and repmgr_apt_repository_add
 
 - name: PostgreSQL | Extensions | Add 2nd Quadrant repo for repmgr | apt
   apt_repository:
     repo: "{{ repmgr_apt_repository }}"
     filename: 2ndquadrant-dl-default-release
-  when: ansible_pkg_mgr == "apt"
+  when: ansible_pkg_mgr == "apt" and repmgr_apt_repository_add
 
 - name: PostgreSQL | Extensions | Use specific version from repo | apt
   set_fact:

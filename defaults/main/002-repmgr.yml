@@ -12,6 +12,7 @@ repmgr_version: 5.2
 #
 
 # Repositories
+repmgr_apt_repository_add: True
 repmgr_gpg_key_url: https://dl.2ndquadrant.com/gpg-key.asc
 repmgr_apt_repository: "deb [arch=amd64] https://dl.2ndquadrant.com/default/release/apt {{ ansible_distribution_release }}-2ndquadrant main"
 # Add the following variable in order to install a specific version from 2nd Quadrant repos using apt. See vars/buster.yml
